@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>News | AI/ML Research Group</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <a href="index.html">
+                <img src="images/logo.png" alt="Precog Research Group" class="nav-logo">
+            </a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publications.html">Publications</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="news.html" class="active">News</a></li>
+                <li><a href="teaching.html">Teaching</a></li>
+                <li><a href="people.html">People</a></li>
+                <li><a href="datasets.html">Datasets</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section class="section">
+    <div class="container">
+        <h1 style="font-size:32px; font-weight:600; margin-bottom:40px;">News</h1>
+
+        <div id="news-page-container">
+            <p>Loading news items...</p>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container">
+        <p>© 2025 AI/ML Research Group, IIT Goa</p>
+    </div>
+</footer>
+
+<script>
+    async function loadFullNews() {
+        try {
+            // Path to your excel file (same as used on index.html)
+            const response = await fetch('./data/home_data.xlsx');
+            if (!response.ok) throw new Error("Excel file not found");
+            
+            const arrayBuffer = await response.buffer ? await response.buffer() : await response.arrayBuffer();
+            
+            // Parse Excel
+            const workbook = XLSX.read(arrayBuffer);
+            
+            // Specifically target the "News" sheet
+            const newsSheet = workbook.Sheets["News"];
+            if (!newsSheet) {
+                document.getElementById('news-page-container').innerHTML = "<p>Error: 'News' sheet not found in home_data.xlsx</p>";
+                return;
+            }
+
+            // Convert to JSON
+            const data = XLSX.utils.sheet_to_json(newsSheet, { raw: false });
+            const container = document.getElementById('news-page-container');
+            
+            // Clear the loading text
+            container.innerHTML = '';
+
+            // Loop through all news items
+            data.forEach(item => {
+                const newsHtml = `
+                    <div class="news-item">
+                        <span class="news-date">${item.Date || ''}</span>
+                        <p>
+                            ${item.Content || ''}
+                            ${item.Link && item.Link !== '#' ? `<a href="${item.Link}" target="_blank">Click Here</a>` : ''}
+                        </p>
+                    </div>`;
+                container.innerHTML += newsHtml;
+            });
+
+        } catch (error) {
+            console.error("Error loading news:", error);
+            document.getElementById('news-page-container').innerHTML = 
+                `<p style="color:red;">Error loading news data. Please ensure home_data.xlsx is in the root folder.</p>`;
+        }
+    }
+
+    // Run when the page loads
+    window.addEventListener('DOMContentLoaded', loadFullNews);
+</script>
+
+</body>
+</html>

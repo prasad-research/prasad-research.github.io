@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Projects | AI/ML Research Group</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <a href="index.html"><img src="images/logo.png" alt="Precog" class="nav-logo"></a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publications.html">Publications</a></li>
+                <li><a href="projects.html" class="active">Projects</a></li>
+                <li><a href="news.html">News</a></li>
+                <li><a href="teaching.html">Teaching</a></li>
+                <li><a href="people.html">People</a></li>
+                <li><a href="datasets.html">Datasets</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section class="section">
+    <div class="container">
+        <h1 style="font-size:32px; font-weight:600; margin-bottom:20px;">Projects</h1>
+
+        <div class="project-filters" id="filter-container">
+            <button class="filter-btn active" onclick="filterProjects('ALL')">ALL</button>
+            <button class="filter-btn" onclick="filterProjects('ML')">ML</button>
+            <button class="filter-btn" onclick="filterProjects('GRAPHS')">GRAPHS</button>
+            <button class="filter-btn" onclick="filterProjects('INTERP')">INTERP</button>
+            <button class="filter-btn" onclick="filterProjects('ROBUSTNESS')">ROBUSTNESS</button>
+            <button class="filter-btn" onclick="filterProjects('NLP')">NLP</button>
+            <button class="filter-btn" onclick="filterProjects('ALIGNMENT')">ALIGNMENT</button>
+            <button class="filter-btn" onclick="filterProjects('CSS')">CSS</button>
+        </div>
+
+        <div id="projects-content">
+            <p>Loading projects...</p>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container"><p>© 2025 AI/ML Research Group, IIT Goa</p></div>
+</footer>
+
+<script>
+    async function loadProjects() {
+        try {
+            const response = await fetch('./data/projects.xlsx');
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer);
+            const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { raw: false });
+
+            const contentDiv = document.getElementById('projects-content');
+            contentDiv.innerHTML = '';
+
+            // Group by Category
+            const grouped = data.reduce((acc, proj) => {
+                acc[proj.Category] = acc[proj.Category] || [];
+                acc[proj.Category].push(proj);
+                return acc;
+            }, {});
+
+            for (const category in grouped) {
+                let sectionHtml = `<h2 class="project-section-title">${category}</h2>`;
+                sectionHtml += `<div class="project-grid">`;
+
+                grouped[category].forEach(proj => {
+                    // Split badges and tags
+                    const badges = proj.Badges ? proj.Badges.split(',').map(b => b.trim()) : [];
+                    const tags = proj.Tags ? proj.Tags.split(',').map(t => t.trim().toUpperCase()) : [];
+                    
+                    const badgeHtml = badges.map(b => `<span class="badge">${b}</span>`).join('');
+
+                    sectionHtml += `
+                        <div class="project-card" data-tags="${tags.join(' ')}">
+                            <h3>${proj.Title}</h3>
+                            <p>${proj.Description}</p>
+                            ${badgeHtml}
+                        </div>`;
+                });
+
+                sectionHtml += `</div>`;
+                contentDiv.innerHTML += sectionHtml;
+            }
+        } catch (error) {
+            console.error("Error loading projects:", error);
+        }
+    }
+
+    function filterProjects(tag) {
+        // Update active button UI
+        const buttons = document.querySelectorAll('.filter-btn');
+        buttons.forEach(btn => {
+            btn.classList.remove('active');
+            if(btn.innerText === tag) btn.classList.add('active');
+        });
+
+        const cards = document.querySelectorAll('.project-card');
+        const sections = document.querySelectorAll('.project-section-title');
+
+        cards.forEach(card => {
+            const cardTags = card.getAttribute('data-tags').split(' ');
+            if (tag === 'ALL' || cardTags.includes(tag.toUpperCase())) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        // Hide section headers if all cards in that section are hidden
+        sections.forEach(section => {
+            const nextGrid = section.nextElementSibling;
+            const visibleCards = nextGrid.querySelectorAll('.project-card[style="display: block;"], .project-card:not([style*="display: none"])');
+            section.style.display = visibleCards.length > 0 ? 'block' : 'none';
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', loadProjects);
+</script>
+
+</body>
+</html>

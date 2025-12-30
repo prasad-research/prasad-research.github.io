@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Publications | AI/ML Research Group</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <a href="index.html"><img src="images/logo.png" alt="Precog" class="nav-logo"></a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publications.html" class="active">Publications</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="news.html">News</a></li>
+                <li><a href="teaching.html">Teaching</a></li>
+                <li><a href="people.html">People</a></li>
+                <li><a href="datasets.html">Datasets</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section class="section">
+    <div class="container">
+        <h1 style="font-size:32px; font-weight:600; margin-bottom:20px;">Publications</h1>
+
+        <input type="text" id="pubFilter" placeholder="Search title, author, or year..." 
+               style="padding:10px 12px; width:300px; border:1px solid #d1d5db; border-radius:6px; margin-bottom:40px;" 
+               onkeyup="filterPublications()">
+
+        <div id="publications-container">
+            <p>Loading publications...</p>
+        </div>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container"><p>© 2025 AI/ML Research Group, IIT Goa</p></div>
+</footer>
+
+<script>
+    async function loadPublications() {
+        try {
+            // Path to your CSV file in the root directory
+            const response = await fetch('./data/publications.csv');
+            const text = await response.text();
+            
+            // Parse CSV
+            const workbook = XLSX.read(text, { type: 'string' });
+            const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+            const container = document.getElementById('publications-container');
+            
+            // Group data by Year
+            const grouped = data.reduce((acc, pub) => {
+                const y = pub.Year || "Other";
+                acc[y] = acc[y] || [];
+                acc[y].push(pub);
+                return acc;
+            }, {});
+
+            // Sort years descending
+            const years = Object.keys(grouped).sort((a, b) => b - a);
+
+            container.innerHTML = years.map(year => `
+                <div class="year-block" style="position: relative; margin-bottom:60px;">
+                    <span style="position:absolute; right:0; top:-10px; font-size:26px; color:#e5e7eb; font-weight:600;">
+                        ${year}
+                    </span>
+                    ${grouped[year].map(pub => {
+                        // Logic for buttons
+                        const url = pub.ArticleURL || pub.FullTextURL || "#";
+                        const source = pub.Source || pub.Publisher || "";
+                        
+                        return `
+                        <div class="publication pub-item">
+                            ${pub.Type ? `<span class="badge">${pub.Type}</span>` : ''}
+                            <p>
+                                <strong>${pub.Title}</strong><br>
+                                ${pub.Authors}<br>
+                                <em>${source} ${pub.Volume ? `(Vol. ${pub.Volume})` : ''}</em>
+                            </p>
+                            <div style="margin-top:8px;">
+                                ${url !== "#" ? `<button class="pub-btn" onclick="window.open('${url}')">PDF/LINK</button>` : ''}
+                                ${pub.DOI ? `<button class="pub-btn" onclick="window.open('https://doi.org/${pub.DOI}')">DOI</button>` : ''}
+                                <button class="pub-btn" onclick="alert('Citations: ${pub.Cites || 0}')">CITES: ${pub.Cites || 0}</button>
+                            </div>
+                        </div>
+                    `}).join('')}
+                </div>
+            `).join('');
+
+        } catch (err) {
+            console.error("Error loading CSV:", err);
+            document.getElementById('publications-container').innerHTML = 
+                `<p style="color:red;">Error loading publications.csv. Please check the file exists in the root.</p>`;
+        }
+    }
+
+    function filterPublications() {
+        const input = document.getElementById("pubFilter").value.toLowerCase();
+        const items = document.getElementsByClassName("pub-item");
+        const yearBlocks = document.getElementsByClassName("year-block");
+
+        for (let i = 0; i < items.length; i++) {
+            const text = items[i].innerText.toLowerCase();
+            items[i].style.display = text.includes(input) ? "" : "none";
+        }
+        
+        for (let block of yearBlocks) {
+            const visibleItems = block.querySelectorAll('.pub-item:not([style*="display: none"])');
+            block.style.display = visibleItems.length > 0 ? "" : "none";
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadPublications);
+</script>
+
+</body>
+</html>

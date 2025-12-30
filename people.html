@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>People | AI/ML Research Group</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        /* Optional: Add a simple fade-in for the cards */
+        .person-card { opacity: 0; transition: opacity 0.5s ease; }
+        .loaded .person-card { opacity: 1; }
+    </style>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <a href="index.html"><img src="images/logo.png" alt="Precog" class="nav-logo"></a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publications.html">Publications</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="news.html">News</a></li>
+                <li><a href="teaching.html">Teaching</a></li>
+                <li><a href="people.html" class="active">People</a></li>
+                <li><a href="datasets.html">Datasets</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section class="section">
+    <div class="container" id="main-content">
+        <h1 style="font-size:32px; font-weight:600; margin-bottom:25px;">People</h1>
+
+        <h2 class="people-section-title">PhD Students</h2>
+        <div id="phd-grid" class="people-grid"></div>
+
+        <h2 class="people-section-title">Masters Students</h2>
+        <div id="masters-grid" class="people-grid"></div>
+
+        <h2 class="people-section-title">Project Staff</h2>
+        <div id="staff-grid" class="people-grid"></div>
+
+        <h2 class="people-section-title">Alumni</h2>
+        <ul id="alumni-list" class="alumni-list"></ul>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container"><p>© 2025 AI/ML Research Group, IIT Goa</p></div>
+</footer>
+
+<script>
+    async function loadPeople() {
+        try {
+            // Path to your excel file - GitHub Pages serves this relative to the root
+            const response = await fetch('./data/people.xlsx'); 
+            if (!response.ok) throw new Error("Could not find people.xlsx");
+            
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer);
+            const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+
+            const containers = {
+                'PhD': document.getElementById('phd-grid'),
+                'Masters': document.getElementById('masters-grid'),
+                'Staff': document.getElementById('staff-grid'),
+                'Alumni': document.getElementById('alumni-list')
+            };
+
+            data.forEach(person => {
+                if (person.Role === 'Alumni') {
+                    const li = `<li><strong>${person.Name}</strong> — ${person.Details || ''}</li>`;
+                    containers['Alumni'].innerHTML += li;
+                } else {
+                    const img = person.Image || 'images/people/default.jpg';
+                    const gs = person.Scholar ? `<a href="${person.Scholar}" target="_blank"><i class="fab fa-google-scholar"></i></a>` : '';
+                    const li = person.Linkedin ? `<a href="${person.Linkedin}" target="_blank"><i class="fab fa-linkedin"></i></a>` : '';
+
+                    const card = `
+                        <div class="person-card">
+                            <img src="${img}" alt="${person.Name}" onerror="this.src='images/people/default.jpg'">
+                            <h3>${person.Name}</h3>
+                            <div class="socials">${gs} ${li}</div>
+                        </div>`;
+                    
+                    if (containers[person.Role]) containers[person.Role].innerHTML += card;
+                }
+            });
+
+            // Trigger fade-in
+            document.body.classList.add('loaded');
+
+        } catch (err) {
+            console.error(err);
+            document.getElementById('main-content').innerHTML += `<p style="color:red;">Error loading data. Please ensure people.xlsx is in the root folder.</p>`;
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadPeople);
+</script>
+</body>
+</html>

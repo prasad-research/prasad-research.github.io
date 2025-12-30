@@ -1,0 +1,684 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>Conference & Journal List | Vipin Gautam</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg: #f4f6fb;
+            --surface: #e8ecef;
+            --primary: #2a4066;
+            --secondary: #1e8759;
+            --accent: #d4a017;
+            --text: #1a1c20;
+            --shadow: 0 12px 30px rgba(0,0,0,0.12);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: #f4f6fb;
+            background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+            background-repeat: repeat;
+            animation: subtleBG 60s linear infinite;
+            color: var(--text);
+            line-height: 1.6;
+        }
+        
+        
+        @keyframes subtleBG {
+            0% { background-position: 0 0; }
+            100% { background-position: 100% 100%; }
+        }
+
+        /* ---------- Page Container ---------- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: rgba(255,255,255,0.55);
+            border-radius: 12px;
+            backdrop-filter: blur(6px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        /* ---------- Sticky Header ---------- */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 2rem 0;
+            position: sticky;
+            top: 0;
+            background-color: rgba(244, 246, 251, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+        }
+
+        .header h1 {
+            font-size: 25px;
+            color: var(--primary);
+        }
+
+        .nav {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav a {
+            color: var(--text);
+            text-decoration: none;
+            padding: .5rem 0;
+            position: relative;
+            transition: var(--transition);
+        }
+
+        .nav a::after {
+            content: "";
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background: var(--primary);
+            transition: var(--transition);
+        }
+
+        .nav a:hover::after {
+            width: 100%;
+        }
+
+        .menu-toggle {
+            display: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        @media(max-width: 768px) {
+            .menu-toggle { display: block; }
+
+            .nav {
+                display: none;
+                flex-direction: column;
+                gap: 1rem;
+                width: 100%;
+            }
+
+            .nav.show {
+                display: flex;
+            }
+
+            .nav a {
+                font-size: 17px;
+                text-align: center;
+                padding: 0.75rem;
+                border-radius: 5px;
+                background: rgba(255,255,255,0.4);
+            }
+        }
+
+        /* ---------- GRID LAYOUT FOR VENUE CARDS ---------- */
+        #venueList {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        /* ---------- Venue Cards ---------- */
+        .venue-card {
+            background: var(--surface);
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .venue-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .venue-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .venue-meta {
+            font-size: .95rem;
+            margin-top: .4rem;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header class="header">
+        <h1>Vipin Gautam</h1>
+
+        <div class="menu-wrapper">
+            <div class="menu-toggle" id="menuToggle">☰</div>
+
+            <nav class="nav" id="navMenu">
+                <a href="index.html#research"><i class="fas fa-infinity"></i> Research</a>
+                <a href="index.html#publications"><i class="fas fa-book"></i> Publications</a>
+                <a href="projects.html"><i class="fas fa-folder-open"></i> Activities</a>
+                <a href="venue.html"><i class="fas fa-landmark"></i> Conferences & Journals List</a>
+                <a href="index.html#contact"><i class="fas fa-envelope"></i> Contact</a>
+                <a href="index.html"><i class="fas fa-home"></i> Home</a>
+            </nav>
+        </div>
+    </header>
+
+    <div id="venueList"></div>
+</div>
+
+<script>
+    // Mobile Menu
+    function toggleMenu() {
+        document.getElementById("navMenu").classList.toggle("show");
+        document.getElementById("menuToggle").classList.toggle("hidden");
+    }
+
+    document.getElementById("menuToggle").addEventListener("click", toggleMenu);
+
+    // Close on link click (mobile)
+    document.querySelectorAll('#navMenu a').forEach(link => {
+        link.addEventListener('click', () => {
+            navMenu.classList.remove("show");
+            menuToggle.classList.remove("hidden");
+        });
+    });
+
+    // Venue Data
+  const venues = [
+  // --- Flagship CV Conferences ---
+  {
+    name: "CVPR",
+    type: "Conference",
+    rank: "A*",
+    org: "IEEE / CVF",
+    link: "https://cvpr.thecvf.com",
+    notes: "Flagship computer vision conference; very strong for ReID, detection, VI-ReID, tracking.",
+    maxPages: "8 pages main text (including figures/tables) + extra pages for references only.",
+    format: "two-column (CVPR/CVF LaTeX template)"
+  },
+  {
+    name: "ICCV",
+    type: "Conference",
+    rank: "A*",
+    org: "IEEE / CVF",
+    link: "https://iccv.thecvf.com",
+    notes: "Top-tier vision conference; held every two years, alternates with ECCV.",
+    maxPages: "8 pages main text + extra pages for references only.",
+    format: "two-column (CVF LaTeX template)"
+  },
+  {
+    name: "ECCV",
+    type: "Conference",
+    rank: "A*",
+    org: "Springer / ECVA",
+    link: "https://eccv.ecva.net",
+    notes: "European flagship computer vision conference.",
+    maxPages: "Typically ~14 pages including references (Springer LNCS, check current CFP).",
+    format: "Springer LNCS (single-column LNCS style)"
+  },
+  {
+    name: "WACV",
+    type: "Conference",
+    rank: "A",
+    org: "IEEE / CVF",
+    link: "https://wacv.thecvf.com",
+    notes: "Winter Conference on Applications of Computer Vision; strong applied CV.",
+    maxPages: "8 pages main text + extra pages for references only.",
+    format: "two-column (CVF/IEEE style)"
+  },
+  {
+    name: "BMVC",
+    fullName: "British Machine Vision Conference",
+    type: "Conference",
+    rank: "A",
+    org: "BMVA",
+    link: "https://bmvc2025.bmva.org",
+    notes: "British Machine Vision Conference; solid CV venue with broad topics.",
+    maxPages: "Submission: 9 pages (excluding references). Camera-ready: 10 pages (excluding ack + bib).",
+    format: "two-column (BMVC LaTeX style)"
+  },
+  {
+    name: "ACCV",
+    fullName: "Asian Conference on Computer Vision",
+    type: "Conference",
+    rank: "A",
+    org: "Asian Federation of Computer Vision",
+    link: "https://accv2026.org",
+    notes: "Asian Conference on Computer Vision; regional but high quality.",
+    maxPages: "Springer LNCS format; page limit set in each year's CFP (usually ~14–15 pages including references).",
+    format: "Springer LNCS (single-column LNCS style)"
+  },
+
+  // --- ML / AI Flagships Used Heavily by CV People ---
+  {
+    name: "NeurIPS",
+    type: "Conference",
+    rank: "A*",
+    org: "NeurIPS Foundation",
+    link: "https://neurips.cc",
+    notes: "Top ML/DL conference; many core CV and representation learning papers.",
+    maxPages: "9 content pages (main text, incl. figures/tables) + extra pages for references; camera-ready often 10 content pages.",
+    format: "two-column (NeurIPS LaTeX template)"
+  },
+  {
+    name: "ICML",
+    type: "Conference",
+    rank: "A*",
+    org: "ICML",
+    link: "https://icml.cc",
+    notes: "Flagship machine learning venue; foundational methods highly relevant to CV.",
+    maxPages: "8-page main body + unlimited pages for references/appendix (single PDF).",
+    format: "two-column (ICML LaTeX template)"
+  },
+  {
+    name: "ICLR",
+    type: "Conference",
+    rank: "A*",
+    org: "ICLR",
+    link: "https://iclr.cc",
+    notes: "Deep learning / representation learning focus; popular for vision transformer and diffusion work.",
+    maxPages: "Main text must be between 6 and 10 pages; unlimited reference pages.",
+    format: "two-column (ICLR LaTeX template, OpenReview-compatible)"
+  },
+  {
+    name: "AAAI",
+    type: "Conference",
+    rank: "A*",
+    org: "AAAI",
+    link: "https://aaai.org/conference/aaai/aaai-25",
+    notes: "Broad AI + ML; includes strong CV tracks (detection, ReID, multi-modal).",
+    maxPages: "7 content pages + up to 2 pages containing only references/ethics/acknowledgements (extra pages sometimes purchasable).",
+    format: "two-column (AAAI Press LaTeX template)"
+  },
+  {
+    name: "IJCAI",
+    type: "Conference",
+    rank: "A*",
+    org: "IJCAI",
+    link: "https://ijcai.org",
+    notes: "International Joint Conference on AI; includes many vision and perception papers.",
+    maxPages: "7 pages for main text + 2 pages for references / acknowledgements / ethics.",
+    format: "two-column (IJCAI LaTeX template)"
+  },
+
+  // --- Multimedia / Vision-related Conferences ---
+  {
+    name: "ACM MM",
+    fullName: "ACM Multimedia",
+    type: "Conference",
+    rank: "A*",
+    org: "ACM",
+    link: "https://www.acmmm.org",
+    notes: "Top-tier multimedia venue; many vision + language, retrieval and video analytics papers.",
+    maxPages: "Full papers typically 8 pages + references (check current CFP for exact rules).",
+    format: "two-column (ACM sigconf template)"
+  },
+  {
+    name: "ICME",
+    fullName: "IEEE International Conference on Multimedia and Expo",
+    type: "Conference",
+    rank: "A",
+    org: "IEEE",
+    link: "https://2025.ieeeicme.org",
+    notes: "Multimedia and computer vision, often with practical applications.",
+    maxPages: "Page limit set per year (commonly ~6 pages including references, plus optional ref-only page).",
+    format: "two-column (IEEE conference format)"
+  },
+
+  // --- Core CV / Pattern Recognition Conferences ---
+  {
+    name: "ICPR",
+    fullName: "International Conference on Pattern Recognition",
+    type: "Conference",
+    rank: "A",
+    org: "IAPR / IEEE",
+    link: "https://icpr2024.org",
+    notes: "Long-running pattern recognition conference with substantial CV content.",
+    maxPages: "15 pages (including references) in Springer LNCS format; camera-ready may allow +1 page; extra pages purchasable.",
+    format: "Springer LNCS"
+  },
+  {
+    name: "DAGM GCPR",
+    fullName: "German Conference on Pattern Recognition",
+    type: "Conference",
+    rank: "A/B",
+    org: "DAGM",
+    link: "https://gcpr-vmv-vcbm-2024.de",
+    notes: "Regional but strong PR/CV venue; often good for segmentation and recognition work.",
+    maxPages: "Typically Springer LNCS with ~12–15 pages; see current CFP.",
+    format: "Springer LNCS"
+  },
+  {
+    name: "ICIP",
+    fullName: "IEEE International Conference on Image Processing",
+    type: "Conference",
+    rank: "A",
+    org: "IEEE",
+    link: "https://cmsworkshops.com/ICIP2024",
+    notes: "Core image processing + vision algorithms; widely recognized.",
+    maxPages: "6 pages of technical content (incl. figures & refs) + optional 7th page containing references only.",
+    format: "two-column (IEEE conference template)"
+  },
+  {
+    name: "ICASSP",
+    fullName: "IEEE International Conference on Acoustics, Speech, and Signal Processing",
+    type: "Conference",
+    rank: "A",
+    org: "IEEE",
+    link: "https://2024.ieeeicassp.org",
+    notes: "Signal processing flagship; includes imaging, computational imaging and some CV.",
+    maxPages: "Page limit specified per year (commonly 4–6 pages incl. references); always check ICASSP author kit.",
+    format: "two-column (IEEE conference format)"
+  },
+
+  // --- Surveillance, Biometrics, and Vision Applications ---
+  {
+    name: "AVSS",
+    fullName: "IEEE International Conference on Advanced Video and Signal-based Surveillance",
+    type: "Conference",
+    rank: "B",
+    org: "IEEE",
+    link: "https://sites.google.com/view/avss2025-tw",
+    notes: "Surveillance-focused; good fit for ReID, tracking, multi-camera systems.",
+    maxPages: "Page limit set by each year's CFP (historically IEEE-style 6 pages + ref page).",
+    format: "two-column (IEEE conference format)"
+  },
+ 
+  // --- Regionally Important CV Conferences (esp. India) ---
+  {
+    name: "ICVGIP",
+    fullName: "Indian Conference on Computer Vision, Graphics and Image Processing",
+    type: "Conference",
+    rank: "B",
+    org: "IUPRAI / ACM India",
+    link: "https://icvgip.in",
+    notes: "Indian flagship in CV/graphics; strong local relevance for CV community.",
+    maxPages: "Uses ACM/elsevier-like proceedings; page limit specified each year (often ~8–10 pages).",
+    format: "ACM-style conference template (two-column; see current year’s instructions)"
+  },
+  {
+    name: "CVIP",
+    fullName: "Conference on Computer Vision and Image Processing",
+    type: "Conference",
+    rank: "B",
+    org: "IAPR-endorsed / Springer CCIS",
+    link: "https://www.iitrpr.ac.in/cvip2025",
+    notes: "Applied CV + image processing; you already publish here.",
+    maxPages: "Springer CCIS/LNCS-style; typical limit ~10–14 pages including references (see current CFP).",
+    format: "Springer CCIS/LNCS"
+  },
+
+  // --- Major Vision Journals / IEEE Transactions ---
+  {
+    name: "TPAMI",
+    fullName: "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+    type: "Journal",
+    rank: "A*",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=34",
+    notes: "Flagship journal for computer vision, pattern recognition, and ML.",
+    maxPages: "Length varies by article type; check the latest Author Guidelines.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+  {
+    name: "IJCV",
+    fullName: "International Journal of Computer Vision",
+    type: "Journal",
+    rank: "A*",
+    org: "Springer",
+    link: "https://www.springer.com/journal/11263",
+    notes: "Dedicated computer vision journal; often extended versions of top-conference papers.",
+    maxPages: "No hard page limit; constraints depend on article type and editor recommendations.",
+    format: "Springer journal template"
+  },
+  {
+    name: "TIP",
+    fullName: "IEEE Transactions on Image Processing",
+    type: "Journal",
+    rank: "A",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=83",
+    notes: "Strong image processing and low- to mid-level vision venue.",
+    maxPages: "Page limits depend on manuscript type; see IEEE Author Information.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+  {
+    name: "TMM",
+    fullName: "IEEE Transactions on Multimedia",
+    type: "Journal",
+    rank: "A",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=6046",
+    notes: "Multimedia, vision, video retrieval, cross-modal tasks.",
+    maxPages: "Varies by article type; typically limited-length research papers.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+  {
+    name: "TCSVT",
+    fullName: "IEEE Transactions on Circuits and Systems for Video Technology",
+    type: "Journal",
+    rank: "A",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=76",
+    notes: "Video analysis, compression, streaming, and CV on video.",
+    maxPages: "Length rules change occasionally; see journal’s Author Information.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+  {
+    name: "TITS",
+    fullName: "IEEE Transactions on Intelligent Transportation Systems",
+    type: "Journal",
+    rank: "A",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=6979",
+    notes: "Perception for ITS: traffic analytics, ADAS, autonomous driving.",
+    maxPages: "Varies; typical limits for regular papers specified in the journal’s guide.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+  {
+    name: "TMI",
+    fullName: "IEEE Transactions on Medical Imaging",
+    type: "Journal",
+    rank: "A*",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=42",
+    notes: "Medical imaging; MRI/CT, segmentation, registration; heavy use of DL/CV.",
+    maxPages: "Regular articles have length limits; see Instructions for Authors.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+  {
+    name: "TBIOM",
+    fullName: "IEEE Transactions on Biometrics, Behavior, and Identity Science",
+    type: "Journal",
+    rank: "A",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=8254253",
+    notes: "Biometrics and identity; gait, face, person analysis, ReID-adjacent.",
+    maxPages: "Length depends on article type; check journal guidelines.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+  {
+    name: "TIFS",
+    fullName: "IEEE Transactions on Information Forensics and Security",
+    type: "Journal",
+    rank: "A*",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=10206",
+    notes: "Security + forensics; many works on adversarial attacks/defenses and biometric security.",
+    maxPages: "Regular papers have specific page limits; see TIFS Author Information.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+  {
+    name: "TNNLS",
+    fullName: "IEEE Transactions on Neural Networks and Learning Systems",
+    type: "Journal",
+    rank: "A*",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=5962385",
+    notes: "General DL/representation learning; a lot of work with CV applications.",
+    maxPages: "Length limits differ by article category; see TNNLS Information for Authors.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+
+  {
+    name: "TAI",
+    fullName: "IEEE Transactions on Artificial Intelligent",
+    type: "Journal",
+    rank: "A*",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=9078688",
+    notes: "Artificial Intelligence; a lot of work with CV applications.",
+    maxPages: "Length limits differ by article category; see TAI Information for Authors.",
+    format: "IEEE Transactions journal template (two-column)"
+  },
+
+  // --- Other Core CV / PR Journals ---
+  {
+    name: "Pattern Recognition",
+    shortName: "PR",
+    type: "Journal",
+    rank: "A",
+    org: "Elsevier",
+    link: "https://www.journals.elsevier.com/pattern-recognition",
+    notes: "Classic pattern recognition + CV journal.",
+    maxPages: "No rigid universal limit; word/page counts vary by article type.",
+    format: "Elsevier journal template (usually two-column in final layout)"
+  },
+  {
+    name: "Pattern Recognition Letters",
+    shortName: "PRL",
+    type: "Journal",
+    rank: "A/B",
+    org: "Elsevier",
+    link: "https://www.journals.elsevier.com/pattern-recognition-letters",
+    notes: "Shorter-format works in pattern recognition / CV.",
+    maxPages: "Short papers; length limits in Author Guidelines.",
+    format: "Elsevier journal template"
+  },
+  {
+    name: "CVIU",
+    fullName: "Computer Vision and Image Understanding",
+    type: "Journal",
+    rank: "A",
+    org: "Elsevier",
+    link: "https://www.journals.elsevier.com/computer-vision-and-image-understanding",
+    notes: "Dedicated CV journal; often geometric and mid/high-level vision.",
+    maxPages: "Length & word limits defined in Guide for Authors.",
+    format: "Elsevier journal template"
+  },
+  {
+    name: "Image and Vision Computing",
+    type: "Journal",
+    rank: "A/B",
+    org: "Elsevier",
+    link: "https://www.journals.elsevier.com/image-and-vision-computing",
+    notes: "Broad CV + vision applications.",
+    maxPages: "Varies by article type.",
+    format: "Elsevier journal template"
+  },
+  {
+    name: "Machine Vision and Applications",
+    type: "Journal",
+    rank: "B",
+    org: "Springer",
+    link: "https://www.springer.com/journal/138",
+    notes: "Application-oriented machine vision.",
+    maxPages: "Springer journal; length limits specified per article type.",
+    format: "Springer journal template"
+  },
+  {
+    name: "Signal Processing: Image Communication",
+    type: "Journal",
+    rank: "B",
+    org: "Elsevier",
+    link: "https://www.journals.elsevier.com/signal-processing-image-communication",
+    notes: "Imaging, image/video transmission, compression, and quality.",
+    maxPages: "Word/page limits in Author Guidelines.",
+    format: "Elsevier journal template"
+  },
+  {
+    name: "IEEE Access (Vision/AI area)",
+    type: "Journal",
+    rank: "B",
+    org: "IEEE",
+    link: "https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=6287639",
+    notes: "Broad-scope journal; many CV/AI papers, but lower selectivity than A*/A venues.",
+    maxPages: "Page limits and APCs defined in IEEE Access Author Information.",
+    format: "IEEE journal template (two-column)"
+  },
+  {
+    name: "ACM TOMM",
+    fullName: "ACM Transactions on Multimedia Computing, Communications, and Applications",
+    type: "Journal",
+    rank: "A",
+    org: "ACM",
+    link: "https://tomm.acm.org",
+    notes: "Multimedia and vision, retrieval, cross-modal work.",
+    maxPages: "ACM journal; length depends on article type.",
+    format: "ACM journal template (two-column in production)"
+  }
+];
+
+
+
+    // Render Grid Cards
+    function renderVenues() {
+    const container = document.getElementById("venueList");
+
+    venues.forEach(v => {
+        const card = document.createElement("div");
+        card.className = "venue-card";
+
+        card.innerHTML = `
+            <div class="venue-title">${v.name} <span style="opacity:.7;">(${v.type})</span></div>
+
+            ${v.rank ? `<div class="venue-meta"><b>Rank:</b> ${v.rank}</div>` : ""}
+
+            ${v.org ? `<div class="venue-meta"><b>Organizer:</b> ${v.org}</div>` : ""}
+
+            ${v.notes ? `<div class="venue-meta"><b>Details:</b> ${v.notes}</div>` : ""}
+
+            ${v.maxPages ? `<div class="venue-meta"><b>Max Pages:</b> ${v.maxPages}</div>` : ""}
+
+            ${v.format ? `<div class="venue-meta"><b>Format:</b> ${v.format}</div>` : ""}
+
+            <a href="${v.link}" target="_blank" 
+               style="margin-top:.6rem; display:block; color:var(--primary); font-weight:600;">
+               Official Website →
+            </a>
+        `;
+
+        container.appendChild(card);
+    });
+
+    
+}
+
+
+    renderVenues();
+</script>
+
+</body>
+</html>

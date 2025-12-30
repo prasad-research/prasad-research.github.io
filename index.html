@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI/ML Research Group</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <a href="index.html"><img src="images/logo.png" alt="Precog" class="nav-logo"></a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html" class="active">Home</a></li>
+                <li><a href="publications.html">Publications</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="news.html">News</a></li>
+                <li><a href="teaching.html">Teaching</a></li>
+                <li><a href="people.html">People</a></li>
+                <li><a href="datasets.html">Datasets</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section class="hero">
+    <div class="container hero-container">
+        <div class="hero-logo">
+            <img src="images/logo.png" alt="Prasad Lab Logo">
+        </div>
+        <div class="hero-text">
+            <p>
+                The AI/ML Lab is a research group headed by 
+                <a href="https://sites.google.com/site/shitalap1/" target="_blank" rel="noopener noreferrer">
+                    Prof. Shitala Prasad
+                </a>, 
+                dedicated to advancing the theory and practice of Artificial Intelligence and Machine Learning, 
+                with a strong emphasis on developing reliable, interpretable, and real-world AI systems. 
+                The lab conducts interdisciplinary research spanning 
+                AI-driven understanding of marine biology, autonomous systems using UAVs and AUVs, 
+                and data-driven intelligence for complex real-world environments.
+            </p>
+        </div>
+    </div>
+</section>
+
+
+<section class="section">
+    <div class="container">
+        <h2>Latest News</h2>
+        <ul class="news-list" id="news-container">
+            </ul>
+        <a class="see-more" href="news.html">See more</a>
+    </div>
+</section>
+
+<section class="section section-light">
+    <div class="container">
+        <h2>Selected Publications</h2>
+        <div id="featured-pubs-container">
+            </div>
+        <a class="see-more" href="publications.html">View all publications</a>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container"><p>© 2025 AI/ML Research Group, IIT Goa</p></div>
+</footer>
+
+<script>
+    async function loadHomeData() {
+    try {
+        const response = await fetch('./data/home_data.xlsx');
+        const arrayBuffer = await response.arrayBuffer();
+        
+        // 1. Update the read call to handle dates correctly
+        const workbook = XLSX.read(arrayBuffer, { cellDates: true });
+
+        // 2. Add { raw: false } to the news sheet conversion
+        const newsData = XLSX.utils.sheet_to_json(workbook.Sheets["News"], { raw: false });
+        const newsContainer = document.getElementById('news-container');
+        
+        // Show only the latest 3 items for the home page
+        newsContainer.innerHTML = newsData.slice(0, 3).map(item => `
+            <li>
+                <span class="date">${item.Date || ''}</span>
+                ${item.Content || ''}
+                ${item.Link && item.Link !== '#' ? `<a href="${item.Link}" target="_blank">Click here</a>` : ''}
+            </li>
+        `).join('');
+
+        // 3. Featured Publications usually don't have date issues, but it's safe to use raw: false here too
+        const pubData = XLSX.utils.sheet_to_json(workbook.Sheets["FeaturedPubs"], { raw: false });
+        const pubContainer = document.getElementById('featured-pubs-container');
+        pubContainer.innerHTML = pubData.map(pub => `
+            <div class="publication">
+                <span class="badge">${pub.Badge || ''}</span>
+                <p>
+                    <strong>${pub.Title || ''}</strong><br>
+                    ${pub.Authors || ''}
+                </p>
+            </div>
+        `).join('');
+
+    } catch (err) {
+        console.error("Error loading home page data:", err);
+    }
+}
+
+    window.addEventListener('DOMContentLoaded', loadHomeData);
+</script>
+
+</body>
+</html>

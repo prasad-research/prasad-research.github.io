@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teaching | AI/ML Research Group</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <a href="index.html"><img src="images/logo.png" alt="Precog" class="nav-logo"></a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publications.html">Publications</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="news.html">News</a></li>
+                <li><a href="teaching.html" class="active">Teaching</a></li>
+                <li><a href="people.html">People</a></li>
+                <li><a href="datasets.html">Datasets</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section class="section">
+    <div class="container">
+        <h1 style="font-size:32px; font-weight:600; margin-bottom:30px;">Teaching</h1>
+
+        <ul class="teaching-list" id="teaching-container">
+            <p>Loading teaching records...</p>
+        </ul>
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container"><p>© 2025 AI/ML Research Group, IIT Goa</p></div>
+</footer>
+
+<script>
+    async function loadTeaching() {
+        try {
+            const response = await fetch('./data/teaching.xlsx');
+            if (!response.ok) throw new Error("Teaching Excel file not found");
+
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer, { cellDates: true });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            // Use raw: false to ensure text stays as text
+            const data = XLSX.utils.sheet_to_json(sheet, { raw: false });
+            const container = document.getElementById('teaching-container');
+            container.innerHTML = '';
+
+            data.forEach(item => {
+                // Construct the main text line
+                let mainText = `${item.Title || ''}`;
+                if (item.Term) mainText += `, ${item.Term}`;
+                if (item.Venue) mainText += `, ${item.Venue}`;
+
+                // Check for sub-links (Flyer, Video, etc.)
+                let linksHtml = '';
+                if (item.Link1_Text || item.Link2_Text) {
+                    linksHtml = '<ul>';
+                    if (item.Link1_Text) linksHtml += `<li><a href="${item.Link1_Url || '#'}">${item.Link1_Text}</a></li>`;
+                    if (item.Link2_Text) linksHtml += `<li><a href="${item.Link2_Url || '#'}">${item.Link2_Text}</a></li>`;
+                    linksHtml += '</ul>';
+                }
+
+                const li = `<li>${mainText}${linksHtml}</li>`;
+                container.innerHTML += li;
+            });
+
+        } catch (error) {
+            console.error(error);
+            document.getElementById('teaching-container').innerHTML = "<li>Error loading teaching data.</li>";
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadTeaching);
+</script>
+
+</body>
+</html>

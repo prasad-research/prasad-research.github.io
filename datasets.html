@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Datasets | AI/ML Research Group | IIT Goa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="assets/css/style.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="container nav-container">
+        <div class="logo">
+            <a href="index.html">
+                <img src="images/logo.png" alt="Precog Research Group" class="nav-logo">
+            </a>
+        </div>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="publications.html">Publications</a></li>
+                <li><a href="projects.html">Projects</a></li>
+                <li><a href="news.html">News</a></li>
+                <li><a href="teaching.html">Teaching</a></li>
+                <li><a href="people.html">People</a></li>
+                <li><a href="datasets.html" class="active">Datasets</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section class="section">
+    <div class="container">
+
+        <h1 style="font-size:32px; font-weight:600; margin-bottom:10px;">Datasets</h1>
+
+        <p style="color:#6b7280; margin-bottom:40px;">
+            Research datasets from our lab
+        </p>
+
+        <div id="datasets-container">
+            <p>Loading datasets...</p>
+        </div>
+
+    </div>
+</section>
+
+<footer class="footer">
+    <div class="container">
+        <p>© 2025 AI/ML Research Group, IIT Goa</p>
+    </div>
+</footer>
+
+<script>
+    async function loadDatasets() {
+        try {
+            // Path to your excel file in the root directory
+            const response = await fetch('./data/datasets.xlsx');
+            if (!response.ok) throw new Error("Datasets Excel file not found");
+
+            const arrayBuffer = await response.arrayBuffer();
+            const workbook = XLSX.read(arrayBuffer);
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
+            
+            // Convert to JSON (raw: false ensures text formatting is preserved)
+            const data = XLSX.utils.sheet_to_json(worksheet, { raw: false });
+            const container = document.getElementById('datasets-container');
+            
+            container.innerHTML = '';
+
+            data.forEach(dataset => {
+                const datasetHtml = `
+                    <div class="dataset-card">
+                        <h3>${dataset.Title || ''}</h3>
+                        <p class="dataset-desc">${dataset.Description || ''}</p>
+
+                        <a href="${dataset.Download_URL || '#'}" class="dataset-btn" target="_blank">DOWNLOAD DATASET</a>
+
+                        <p class="hash">
+                            ${dataset.MD5 ? `MD5: ${dataset.MD5}<br>` : ''}
+                            ${dataset.SHA1 ? `SHA1: ${dataset.SHA1}` : ''}
+                        </p>
+                    </div>`;
+                container.innerHTML += datasetHtml;
+            });
+
+        } catch (error) {
+            console.error("Error loading datasets:", error);
+            document.getElementById('datasets-container').innerHTML = 
+                `<p style="color:red;">Error loading datasets data. Please ensure datasets.xlsx is in the root folder.</p>`;
+        }
+    }
+
+    // Run when the page loads
+    window.addEventListener('DOMContentLoaded', loadDatasets);
+</script>
+
+</body>
+</html>
