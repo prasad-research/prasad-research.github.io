@@ -140,7 +140,7 @@
                     containers['Alumni'].innerHTML += li;
                 } else {
                     // Path Handling: Ensures images/people/ is prefixed if not in Excel
-                    let imgPath = person.Image || 'images/people/default.jpg';
+                    let imgPath = person.Image || 'images/People/default.jpg';
                     
                     const gs = person.Scholar ? `<a href="${person.Scholar}" target="_blank" title="Google Scholar"><i class="fas fa-graduation-cap"></i></a>` : '';
                     const li = person.Linkedin ? `<a href="${person.Linkedin}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>` : '';
@@ -149,7 +149,7 @@
                         <div class="person-card">
                             <img src="${imgPath}" 
                                  alt="${person.Name}" 
-                                 onerror="this.onerror=null; this.src='images/people/default.jpg';">
+                                 onerror="this.onerror=null; this.src='images/People/default.jpg';">
                             <h3>${person.Name}</h3>
                             <p style="color:#666; font-size:14px; margin-bottom:10px;">${person.Details || ''}</p>
                             <div class="socials">${gs} ${li}</div>
