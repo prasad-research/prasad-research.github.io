@@ -11,7 +11,6 @@
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     
     <style>
-        /* Layout Fixes */
         .people-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -25,14 +24,12 @@
             padding: 20px;
             background: #fff;
             border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
             transition: transform 0.2s ease;
         }
 
-        .person-card:hover {
-            transform: translateY(-5px);
-        }
+        .person-card:hover { transform: translateY(-5px); }
 
-        /* Image Styling */
         .person-card img {
             width: 160px;
             height: 160px;
@@ -43,6 +40,7 @@
             display: block;
             margin-left: auto;
             margin-right: auto;
+            background-color: #fafafa;
         }
 
         .people-section-title {
@@ -58,17 +56,9 @@
             font-size: 20px;
             margin: 0 8px;
             text-decoration: none;
-            transition: color 0.2s;
         }
 
-        .socials a:hover {
-            color: #007bff;
-        }
-
-        .alumni-list {
-            line-height: 1.8;
-            padding-left: 20px;
-        }
+        .socials a:hover { color: #007bff; }
     </style>
 </head>
 
@@ -107,7 +97,7 @@
         <div id="staff-grid" class="people-grid"></div>
 
         <h2 class="people-section-title">Alumni</h2>
-        <ul id="alumni-list" class="alumni-list"></ul>
+        <ul id="alumni-list" class="alumni-list" style="line-height: 2;"></ul>
     </div>
 </section>
 
@@ -118,9 +108,8 @@
 <script>
     async function loadPeople() {
         try {
-            // Fetching binary Excel file
             const response = await fetch('./data/people.xlsx'); 
-            if (!response.ok) throw new Error("Could not find data/people.xlsx. Check file name and path.");
+            if (!response.ok) throw new Error("Could not find people.xlsx");
             
             const arrayBuffer = await response.arrayBuffer();
             const dataBuffer = new Uint8Array(arrayBuffer);
@@ -139,33 +128,34 @@
                     const li = `<li><strong>${person.Name}</strong> — ${person.Details || ''}</li>`;
                     containers['Alumni'].innerHTML += li;
                 } else {
-                    // Path Handling: Ensures images/people/ is prefixed if not in Excel
-                    let imgPath = person.Image || 'images/People/default.jpg';
+                    // FIX: Ensure path uses capital 'People' regardless of Excel entry
+                    let rawPath = person.Image || 'images/People/default.jpg';
+                    let imgPath = rawPath.replace('images/people/', 'images/People/');
                     
-                    const gs = person.Scholar ? `<a href="${person.Scholar}" target="_blank" title="Google Scholar"><i class="fas fa-graduation-cap"></i></a>` : '';
-                    const li = person.Linkedin ? `<a href="${person.Linkedin}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>` : '';
+                    const gs = person.Scholar && person.Scholar !== '#' ? 
+                        `<a href="${person.Scholar}" target="_blank" title="Scholar"><i class="fas fa-graduation-cap"></i></a>` : '';
+                    const li = person.Linkedin && person.Linkedin !== '#' ? 
+                        `<a href="${person.Linkedin}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>` : '';
 
                     const card = `
                         <div class="person-card">
                             <img src="${imgPath}" 
                                  alt="${person.Name}" 
                                  onerror="this.onerror=null; this.src='images/People/default.jpg';">
-                            <h3>${person.Name}</h3>
-                            <p style="color:#666; font-size:14px; margin-bottom:10px;">${person.Details || ''}</p>
+                            <h3 style="margin: 10px 0 5px 0; font-size: 1.1rem;">${person.Name}</h3>
+                            <p style="color:#666; font-size:14px; margin-bottom:10px; min-height: 1em;">${person.Details || ''}</p>
                             <div class="socials">${gs} ${li}</div>
                         </div>`;
                     
                     if (containers[person.Role]) {
                         containers[person.Role].innerHTML += card;
-                    } else {
-                        console.warn(`Unknown role: ${person.Role} for ${person.Name}`);
                     }
                 }
             });
 
         } catch (err) {
-            console.error("Error loading people:", err);
-            document.getElementById('main-content').innerHTML += `<p style="color:red; text-align:center;">Error loading people data: ${err.message}</p>`;
+            console.error("Error:", err);
+            document.getElementById('main-content').innerHTML += `<p style="color:red; text-align:center;">Error loading people: ${err.message}</p>`;
         }
     }
 
