@@ -11,9 +11,64 @@
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     
     <style>
-        /* Optional: Add a simple fade-in for the cards */
-        .person-card { opacity: 0; transition: opacity 0.5s ease; }
-        .loaded .person-card { opacity: 1; }
+        /* Layout Fixes */
+        .people-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+            padding-top: 20px;
+        }
+
+        .person-card {
+            text-align: center;
+            padding: 20px;
+            background: #fff;
+            border-radius: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .person-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Image Styling */
+        .person-card img {
+            width: 160px;
+            height: 160px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 3px solid #f3f4f6;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .people-section-title {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            font-size: 24px;
+            color: #333;
+        }
+
+        .socials a {
+            color: #555;
+            font-size: 20px;
+            margin: 0 8px;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .socials a:hover {
+            color: #007bff;
+        }
+
+        .alumni-list {
+            line-height: 1.8;
+            padding-left: 20px;
+        }
     </style>
 </head>
 
@@ -22,7 +77,7 @@
 <header class="navbar">
     <div class="container nav-container">
         <div class="logo">
-            <a href="index.html"><img src="images/logo.png" alt="Precog" class="nav-logo"></a>
+            <a href="index.html"><img src="images/logo.png" alt="Logo" class="nav-logo"></a>
         </div>
         <nav>
             <ul class="nav-links">
@@ -63,12 +118,13 @@
 <script>
     async function loadPeople() {
         try {
-            // Path to your excel file - GitHub Pages serves this relative to the root
+            // Fetching binary Excel file
             const response = await fetch('./data/people.xlsx'); 
-            if (!response.ok) throw new Error("Could not find people.xlsx");
+            if (!response.ok) throw new Error("Could not find data/people.xlsx. Check file name and path.");
             
             const arrayBuffer = await response.arrayBuffer();
-            const workbook = XLSX.read(arrayBuffer);
+            const dataBuffer = new Uint8Array(arrayBuffer);
+            const workbook = XLSX.read(dataBuffer, {type: 'array'});
             const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
             const containers = {
@@ -83,27 +139,33 @@
                     const li = `<li><strong>${person.Name}</strong> — ${person.Details || ''}</li>`;
                     containers['Alumni'].innerHTML += li;
                 } else {
-                    const img = person.Image || 'images/people/default.jpg';
-                    const gs = person.Scholar ? `<a href="${person.Scholar}" target="_blank"><i class="fab fa-google-scholar"></i></a>` : '';
-                    const li = person.Linkedin ? `<a href="${person.Linkedin}" target="_blank"><i class="fab fa-linkedin"></i></a>` : '';
+                    // Path Handling: Ensures images/people/ is prefixed if not in Excel
+                    let imgPath = person.Image || 'images/people/default.jpg';
+                    
+                    const gs = person.Scholar ? `<a href="${person.Scholar}" target="_blank" title="Google Scholar"><i class="fas fa-graduation-cap"></i></a>` : '';
+                    const li = person.Linkedin ? `<a href="${person.Linkedin}" target="_blank" title="LinkedIn"><i class="fab fa-linkedin"></i></a>` : '';
 
                     const card = `
                         <div class="person-card">
-                            <img src="${img}" alt="${person.Name}" onerror="this.src='images/people/default.jpg'">
+                            <img src="${imgPath}" 
+                                 alt="${person.Name}" 
+                                 onerror="this.onerror=null; this.src='images/people/default.jpg';">
                             <h3>${person.Name}</h3>
+                            <p style="color:#666; font-size:14px; margin-bottom:10px;">${person.Details || ''}</p>
                             <div class="socials">${gs} ${li}</div>
                         </div>`;
                     
-                    if (containers[person.Role]) containers[person.Role].innerHTML += card;
+                    if (containers[person.Role]) {
+                        containers[person.Role].innerHTML += card;
+                    } else {
+                        console.warn(`Unknown role: ${person.Role} for ${person.Name}`);
+                    }
                 }
             });
 
-            // Trigger fade-in
-            document.body.classList.add('loaded');
-
         } catch (err) {
-            console.error(err);
-            document.getElementById('main-content').innerHTML += `<p style="color:red;">Error loading data. Please ensure people.xlsx is in the root folder.</p>`;
+            console.error("Error loading people:", err);
+            document.getElementById('main-content').innerHTML += `<p style="color:red; text-align:center;">Error loading people data: ${err.message}</p>`;
         }
     }
 
